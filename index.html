@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Office Hours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --text:#f5f5f7;
+    --muted:#98989f;
+    --muted-2:#c7c7cc;
+    --accent:#0a84ff;
+    --good:#30d158;
+    --danger:#ff453a;
+    --glass:rgba(255,255,255,0.10);
+    --glass-strong:rgba(255,255,255,0.16);
+    --glass-border:rgba(255,255,255,0.28);
+    --glass-border-dim:rgba(255,255,255,0.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:#08080d;
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    min-height:100vh;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+  }
+  /* liquid background blobs */
+  .blob{position:fixed;border-radius:50%;filter:blur(70px);z-index:0;opacity:0.55;will-change:transform;}
+  .blob-1{width:340px;height:340px;top:-90px;left:-80px;background:radial-gradient(circle at 30% 30%, #ff5ea8, transparent 70%);animation:drift1 22s ease-in-out infinite;}
+  .blob-2{width:380px;height:380px;top:120px;right:-140px;background:radial-gradient(circle at 60% 40%, #0a84ff, transparent 70%);animation:drift2 26s ease-in-out infinite;}
+  .blob-3{width:320px;height:320px;bottom:-100px;left:10%;background:radial-gradient(circle at 50% 50%, #34d399, transparent 70%);animation:drift3 30s ease-in-out infinite;}
+  .blob-4{width:280px;height:280px;bottom:10%;right:-60px;background:radial-gradient(circle at 50% 50%, #b388ff, transparent 70%);animation:drift1 24s ease-in-out infinite reverse;}
+  @keyframes drift1{0%,100%{transform:translate(0,0);}50%{transform:translate(30px,40px);}}
+  @keyframes drift2{0%,100%{transform:translate(0,0);}50%{transform:translate(-40px,30px);}}
+  @keyframes drift3{0%,100%{transform:translate(0,0);}50%{transform:translate(20px,-30px);}}
+
+  .wrap{max-width:480px;margin:0 auto;padding:52px 18px 60px;position:relative;z-index:1;}
+
+  header{margin-bottom:30px;}
+  header h1{
+    font-size:30px;font-weight:700;margin:0 0 6px;letter-spacing:-0.03em;color:var(--text);
+  }
+  header p{margin:0;color:var(--muted);font-size:14px;letter-spacing:-0.01em;}
+
+  /* glass base */
+  .glass{
+    background:var(--glass);
+    backdrop-filter:blur(28px) saturate(180%);
+    -webkit-backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid var(--glass-border-dim);
+    position:relative;
+  }
+  .glass::before{
+    content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 40%);
+    mix-blend-mode:overlay;
+  }
+  .glass::after{
+    content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(255,255,255,0.04);
+  }
+
+  .tabs{
+    position:relative;display:flex;gap:0;border-radius:20px;padding:5px;margin-bottom:26px;
+  }
+  .tab-indicator{
+    position:absolute;top:5px;left:5px;height:calc(100% - 10px);width:calc(50% - 5px);
+    background:rgba(255,255,255,0.92);border-radius:15px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+    transition:transform .38s cubic-bezier(.32,.72,0,1);
+    z-index:0;
+  }
+  .tab{position:relative;z-index:1;flex:1;text-align:center;padding:11px 0;border-radius:15px;font-size:13.5px;font-weight:600;color:var(--muted-2);cursor:pointer;user-select:none;transition:color .3s ease;}
+  .tab.active{color:#08080d;}
+
+  .panel{display:none;}
+  .panel.active{display:block;animation:fadeUp .35s cubic-bezier(.2,.8,.2,1);}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  .card{
+    border-radius:26px;
+    padding:22px;
+    margin-bottom:14px;
+    box-shadow:0 12px 34px rgba(0,0,0,0.35);
+  }
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 16px;font-weight:600;position:relative;z-index:1;}
+
+  .field{margin-bottom:14px;position:relative;z-index:1;}
+  .field:last-child{margin-bottom:0;}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px;}
+  .row{display:flex;gap:10px;position:relative;z-index:1;}
+  .row .field{flex:1;}
+
+  input[type=text], input[type=number], select{
+    width:100%;
+    background:rgba(0,0,0,0.28);
+    border:1px solid rgba(255,255,255,0.12);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-variant-numeric:tabular-nums;
+    font-size:16px;
+    font-weight:500;
+    padding:12px 14px;
+    border-radius:16px;
+    appearance:none;
+    -webkit-appearance:none;
+    transition:border-color .2s, background .2s;
+  }
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) center,calc(100% - 13px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat;}
+  input:focus,select:focus{outline:none;border-color:var(--accent);background:rgba(10,132,255,0.12);}
+
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    letter-spacing:-0.01em;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.16);
+    background:rgba(255,255,255,0.09);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    color:var(--text);
+    padding:14px 14px;
+    cursor:pointer;
+    position:relative;
+    z-index:1;
+    transition:transform .12s ease, opacity .2s;
+  }
+  button:active{transform:scale(0.96);opacity:0.8;}
+  button.primary{background:var(--accent);border:1px solid rgba(255,255,255,0.3);color:#fff;box-shadow:0 8px 22px rgba(10,132,255,0.4), inset 0 1px 0 rgba(255,255,255,0.4);}
+  button.ghost{background:rgba(255,255,255,0.05);}
+  .btn-row{display:flex;gap:10px;margin-top:16px;position:relative;z-index:1;}
+  .btn-row button{flex:1;}
+
+  .timer-display{
+    font-family:'Inter',sans-serif;
+    font-variant-numeric:tabular-nums;
+    font-size:56px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    text-align:center;
+    margin:10px 0 6px;
+    color:var(--text);
+    transition:color .4s ease;
+    position:relative;z-index:1;
+  }
+  .timer-display.done{color:var(--good);}
+  .timer-sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px;position:relative;z-index:1;}
+
+  .progress-track{height:6px;background:rgba(255,255,255,0.10);border-radius:99px;overflow:hidden;margin-bottom:14px;position:relative;z-index:1;}
+  .progress-fill{height:100%;background:var(--accent);border-radius:99px;width:0%;transition:width .4s ease, background .4s ease;box-shadow:0 0 10px rgba(10,132,255,0.6);}
+  .progress-fill.done{background:var(--good);box-shadow:0 0 10px rgba(48,209,88,0.6);}
+
+  .status-line{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:13px 15px;border-radius:16px;background:rgba(10,132,255,0.14);color:var(--text);transition:background .3s ease;position:relative;z-index:1;border:1px solid rgba(255,255,255,0.08);}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;box-shadow:0 0 8px var(--accent);}
+  .status-dot.done{background:var(--good);box-shadow:0 0 8px var(--good);}
+  .status-line.done{background:rgba(48,209,88,0.14);}
+
+  .notify-note{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.55;position:relative;z-index:1;}
+
+  .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;position:relative;z-index:1;}
+  .stat{background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:14px;}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+  .stat .v{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:18px;font-weight:700;}
+
+  .wfh-slot{background:rgba(10,132,255,0.14);border:1px solid rgba(255,255,255,0.14);border-radius:22px;padding:20px;text-align:center;margin-bottom:14px;position:relative;z-index:1;}
+  .wfh-slot .label{font-size:11.5px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:600;}
+  .wfh-slot .time{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:28px;font-weight:700;color:var(--text);letter-spacing:-0.01em;}
+
+  .total-line{display:flex;justify-content:space-between;align-items:center;padding:14px 4px 2px;font-size:13.5px;color:var(--muted-2);position:relative;z-index:1;}
+  .total-line .badge{font-size:12px;font-weight:700;padding:5px 12px;border-radius:99px;background:rgba(48,209,88,0.18);color:var(--good);border:1px solid rgba(48,209,88,0.3);}
+  .total-line .badge.short{background:rgba(255,69,58,0.18);color:var(--danger);border:1px solid rgba(255,69,58,0.3);}
+
+  .error{color:var(--danger);font-size:13px;margin-top:10px;position:relative;z-index:1;}
+
+  footer{margin-top:24px;color:var(--muted);font-size:11.5px;line-height:1.6;text-align:center;padding:0 8px;position:relative;z-index:1;}
+</style>
+</head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+<div class="blob blob-4"></div>
+<div class="wrap">
+  <header>
+    <h1>Office Hours</h1>
+    <p>In-office timer and WFH timesheet calculator</p>
+  </header>
+
+  <div class="tabs glass" style="border-radius:20px;">
+    <div class="tab-indicator" id="tab-indicator"></div>
+    <div class="tab active" data-tab="timer">Live Timer</div>
+    <div class="tab" data-tab="sheet">Timesheet</div>
+  </div>
+
+  <!-- TIMER PANEL -->
+  <div class="panel active" id="panel-timer">
+    <div class="card glass">
+      <h2>Office In-Time</h2>
+      <div class="row">
+        <div class="field">
+          <label for="t-intime">Entered office at (24h)</label>
+          <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:MM" id="t-intime" class="time-input">
+        </div>
+        <div class="field" style="flex:0 0 84px;">
+          <label>&nbsp;</label>
+          <button id="t-now" style="width:100%;">Now</button>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="primary" id="t-start">Start tracking</button>
+        <button class="ghost" id="t-reset">Reset</button>
+      </div>
+    </div>
+
+    <div class="card glass" id="t-live-card" style="display:none;">
+      <h2>Time In Office</h2>
+      <div class="timer-display" id="t-elapsed">0:00:00</div>
+      <div class="timer-sub" id="t-target-sub">Target: 3h 30m</div>
+      <div class="progress-track"><div class="progress-fill" id="t-progress"></div></div>
+      <div class="status-line" id="t-status">
+        <div class="status-dot" id="t-dot"></div>
+        <span id="t-status-text">Tracking started</span>
+      </div>
+      <div class="notify-note" id="t-notify-note">
+        Notifications aren't enabled yet — <span id="t-enable-notify" style="color:var(--accent);text-decoration:underline;cursor:pointer;">tap here to allow an alert</span> when 3.5 hours is up.
+      </div>
+    </div>
+
+    <footer>
+      Keep this tab open (or the app if you've added it to your Home Screen) for the alert to fire. If you reopen the page later, just re-enter the same in-time — the elapsed time is calculated from the clock, not a background timer.
+    </footer>
+  </div>
+
+  <!-- TIMESHEET PANEL -->
+  <div class="panel" id="panel-sheet">
+    <div class="card glass">
+      <h2>Office Hours (from InfyMe)</h2>
+      <div class="row">
+        <div class="field">
+          <label for="s-in">Office in (24h)</label>
+          <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:MM" id="s-in" value="08:35" class="time-input">
+        </div>
+        <div class="field">
+          <label for="s-out">Office out (24h)</label>
+          <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:MM" id="s-out" value="13:48" class="time-input">
+        </div>
+      </div>
+    </div>
+
+    <div class="card glass">
+      <h2>Target &amp; WFH Placement</h2>
+      <div class="row">
+        <div class="field">
+          <label for="s-target">Total target (24h)</label>
+          <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:MM" id="s-target" value="09:15" class="time-input">
+        </div>
+        <div class="field">
+          <label for="s-buffer">Gap (mins)</label>
+          <input type="number" id="s-buffer" value="2" min="0" max="60">
+        </div>
+      </div>
+      <div class="field">
+        <label for="s-placement">Fill WFH time</label>
+        <select id="s-placement">
+          <option value="auto">Auto (based on office timing)</option>
+          <option value="after">After office (evening WFH)</option>
+          <option value="before">Before office (morning WFH)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card glass" id="s-result-card" style="display:none;">
+      <h2>Result</h2>
+      <div class="result-grid">
+        <div class="stat">
+          <div class="k">Office duration</div>
+          <div class="v" id="s-office-dur">–</div>
+        </div>
+        <div class="stat">
+          <div class="k">WFH needed</div>
+          <div class="v" id="s-wfh-needed">–</div>
+        </div>
+      </div>
+      <div class="wfh-slot">
+        <div class="label" id="s-wfh-label">Fill WFH time in InfyMe</div>
+        <div class="time" id="s-wfh-slot">–</div>
+      </div>
+      <div class="total-line">
+        <span>Total working time</span>
+        <span class="badge" id="s-total-badge">–</span>
+      </div>
+      <div class="error" id="s-error" style="display:none;"></div>
+    </div>
+
+    <footer>
+      "Auto" fills WFH after office if you clocked in before midday, and before office if you clocked in during the afternoon/evening. Switch it manually any time.
+    </footer>
+  </div>
+</div>
+
+<script>
+// ---------- helpers ----------
+function toMinutes(hhmm){
+  if(!hhmm) return null;
+  const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(hhmm.trim());
+  if(!match) return null;
+  return Number(match[1])*60 + Number(match[2]);
+}
+function attachTimeFormatting(id){
+  const el = document.getElementById(id);
+  el.addEventListener('input', ()=>{
+    let digits = el.value.replace(/\D/g,'').slice(0,4);
+    el.value = digits.length >= 3 ? digits.slice(0,2)+':'+digits.slice(2) : digits;
+  });
+}
+function fmtHM(mins){
+  const sign = mins < 0 ? '-' : '';
+  mins = Math.abs(Math.round(mins));
+  const h = Math.floor(mins/60), m = mins%60;
+  return sign + h + 'h ' + String(m).padStart(2,'0') + 'm';
+}
+function fmtClock(mins){
+  mins = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(mins/60), m = mins%60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+}
+
+['t-intime','s-in','s-out','s-target'].forEach(attachTimeFormatting);
+
+// ---------- persistence (best-effort; safe no-op if storage is blocked) ----------
+const PERSIST_IDS = ['t-intime','s-in','s-out','s-target','s-buffer','s-placement'];
+function loadPersisted(){
+  try{
+    PERSIST_IDS.forEach(id=>{
+      const saved = localStorage.getItem('oht_'+id);
+      if(saved !== null){ document.getElementById(id).value = saved; }
+    });
+  }catch(e){}
+}
+function persistField(id){
+  try{ localStorage.setItem('oht_'+id, document.getElementById(id).value); }catch(e){}
+}
+PERSIST_IDS.forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>persistField(id));
+  document.getElementById(id).addEventListener('change', ()=>persistField(id));
+});
+loadPersisted();
+
+// ---------- tabs ----------
+const tabIndicator = document.getElementById('tab-indicator');
+function moveIndicator(tabEl){
+  const idx = Array.from(document.querySelectorAll('.tab')).indexOf(tabEl);
+  tabIndicator.style.transform = 'translateX(' + (idx*100) + '%)';
+}
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+    moveIndicator(tab);
+  });
+});
+
+// ---------- live timer ----------
+const TARGET_MIN = 210; // 3h 30m
+let timerInterval = null;
+let alertFired = false;
+let audioCtx = null;
+
+function beep(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = 'sine'; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.9);
+    o.start(); o.stop(audioCtx.currentTime+0.9);
+  }catch(e){}
+}
+
+document.getElementById('t-now').addEventListener('click', ()=>{
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('t-intime').value = hh+':'+mm;
+});
+
+document.getElementById('t-enable-notify').addEventListener('click', ()=>{
+  if('Notification' in window){
+    Notification.requestPermission().then(perm=>{
+      document.getElementById('t-notify-note').textContent =
+        perm === 'granted' ? "Notifications enabled — you'll get an alert at 3h 30m." :
+        "Notification permission was not granted. You'll still see the on-screen alert and hear a beep.";
+    });
+  } else {
+    document.getElementById('t-notify-note').textContent =
+      "This browser doesn't support push notifications here — you'll still see the on-screen alert and hear a beep when the tab is open.";
+  }
+});
+
+document.getElementById('t-start').addEventListener('click', ()=>{
+  const val = document.getElementById('t-intime').value;
+  if(toMinutes(val) === null){ alert('Enter a valid 24-hour time (HH:MM), or tap "Now".'); return; }
+  startTracking(val);
+});
+
+function startTracking(val){
+  alertFired = false;
+  document.getElementById('t-live-card').style.display = 'block';
+  document.getElementById('t-target-sub').textContent = 'Target: 3h 30m in office';
+  if(timerInterval) clearInterval(timerInterval);
+  tick(val);
+  timerInterval = setInterval(()=>tick(val), 1000);
+  try{ localStorage.setItem('oht_tracking_active', '1'); }catch(e){}
+}
+
+document.getElementById('t-reset').addEventListener('click', ()=>{
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+  alertFired = false;
+  document.getElementById('t-live-card').style.display = 'none';
+  document.getElementById('t-intime').value = '';
+  document.getElementById('t-elapsed').classList.remove('done');
+  try{
+    localStorage.removeItem('oht_tracking_active');
+    localStorage.removeItem('oht_t-intime');
+  }catch(e){}
+});
+
+function tick(inTimeStr){
+  const inMin = toMinutes(inTimeStr);
+  const now = new Date();
+  let nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
+  let elapsedMin = nowMin - inMin;
+  if(elapsedMin < 0) elapsedMin += 1440; // crossed midnight edge case
+
+  const totalSeconds = Math.floor(elapsedMin*60);
+  const h = Math.floor(totalSeconds/3600);
+  const m = Math.floor((totalSeconds%3600)/60);
+  const s = totalSeconds%60;
+  document.getElementById('t-elapsed').textContent = h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+
+  const pct = Math.min(100, (elapsedMin/TARGET_MIN)*100);
+  const fill = document.getElementById('t-progress');
+  fill.style.width = pct+'%';
+
+  const dot = document.getElementById('t-dot');
+  const statusLine = document.getElementById('t-status');
+  const statusText = document.getElementById('t-status-text');
+  const elapsedEl = document.getElementById('t-elapsed');
+
+  if(elapsedMin >= TARGET_MIN){
+    fill.classList.add('done');
+    dot.classList.add('done');
+    statusLine.classList.add('done');
+    elapsedEl.classList.add('done');
+    statusText.textContent = '3h 30m complete';
+    if(!alertFired){
+      alertFired = true;
+      beep();
+      if('Notification' in window && Notification.permission === 'granted'){
+        new Notification('Office hours complete', { body: "You've hit 3 hours 30 minutes in office." });
+      }
+      document.getElementById('t-notify-note').textContent = "3h 30m reached.";
+    }
+  } else {
+    fill.classList.remove('done');
+    dot.classList.remove('done');
+    statusLine.classList.remove('done');
+    elapsedEl.classList.remove('done');
+    statusText.textContent = fmtHM(TARGET_MIN - elapsedMin) + ' remaining until 3h 30m';
+  }
+}
+
+// ---------- timesheet calculator ----------
+function calcSheet(){
+  const inVal = document.getElementById('s-in').value;
+  const outVal = document.getElementById('s-out').value;
+  const targetVal = document.getElementById('s-target').value;
+  const buffer = Number(document.getElementById('s-buffer').value) || 0;
+  const placement = document.getElementById('s-placement').value;
+  const errEl = document.getElementById('s-error');
+  const resultCard = document.getElementById('s-result-card');
+
+  if(!inVal || !outVal || !targetVal){
+    resultCard.style.display = 'none';
+    return;
+  }
+
+  const inMin = toMinutes(inVal);
+  const outMin = toMinutes(outVal);
+  const targetMin = toMinutes(targetVal);
+
+  if(inMin === null || outMin === null || targetMin === null || outMin <= inMin){
+    resultCard.style.display = 'block';
+    errEl.style.display = 'block';
+    errEl.textContent = (inMin === null || outMin === null || targetMin === null)
+      ? 'Enter complete 24-hour times as HH:MM (e.g. 08:35).'
+      : 'Office-out time must be after office-in time.';
+    document.getElementById('s-office-dur').textContent = '–';
+    document.getElementById('s-wfh-needed').textContent = '–';
+    document.getElementById('s-wfh-slot').textContent = '–';
+    document.getElementById('s-total-badge').textContent = '–';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const officeDur = outMin - inMin;
+  const remaining = Math.max(0, targetMin - officeDur);
+
+  resultCard.style.display = 'block';
+  document.getElementById('s-office-dur').textContent = fmtHM(officeDur);
+  document.getElementById('s-wfh-needed').textContent = remaining === 0 ? 'None' : fmtHM(remaining);
+
+  if(remaining === 0){
+    document.getElementById('s-wfh-label').textContent = 'No WFH entry needed';
+    document.getElementById('s-wfh-slot').textContent = 'Target already met';
+  } else {
+    let mode = placement;
+    if(mode === 'auto'){
+      mode = (inMin < 12*60) ? 'after' : 'before';
+    }
+    let wfhStart, wfhEnd, label;
+    if(mode === 'after'){
+      wfhStart = outMin + buffer;
+      wfhEnd = wfhStart + remaining;
+      label = 'Fill WFH time (after office)';
+    } else {
+      wfhEnd = inMin - buffer;
+      wfhStart = wfhEnd - remaining;
+      label = 'Fill WFH time (before office)';
+    }
+    document.getElementById('s-wfh-label').textContent = label;
+    document.getElementById('s-wfh-slot').textContent = fmtClock(wfhStart) + ' – ' + fmtClock(wfhEnd);
+  }
+
+  const totalMin = officeDur + remaining;
+  const badge = document.getElementById('s-total-badge');
+  document.querySelector('.total-line span:first-child').textContent = 'Total working time (' + fmtHM(totalMin) + ')';
+  if(totalMin >= targetMin){
+    badge.textContent = 'On target';
+    badge.classList.remove('short');
+  } else {
+    badge.textContent = 'Short of target';
+    badge.classList.add('short');
+  }
+}
+
+['s-in','s-out','s-target','s-buffer','s-placement'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calcSheet);
+  document.getElementById(id).addEventListener('change', calcSheet);
+});
+calcSheet();
+
+// resume an in-progress timer after reload, if the state survived
+try{
+  if(localStorage.getItem('oht_tracking_active') === '1'){
+    const savedIn = document.getElementById('t-intime').value;
+    if(toMinutes(savedIn) !== null){
+      startTracking(savedIn);
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      const timerTab = document.querySelector('.tab[data-tab="timer"]');
+      timerTab.classList.add('active');
+      document.getElementById('panel-timer').classList.add('active');
+      moveIndicator(timerTab);
+    }
+  }
+}catch(e){}
+</script>
+</body>
+</html>
